@@ -43,10 +43,11 @@
 #include "precomp.hpp"
 #include "circlesgrid.hpp"
 #include <limits>
-//#define DEBUG_CIRCLES
+#define DEBUG_CIRCLES
 
 #ifdef DEBUG_CIRCLES
 #  include <iostream>
+#  include <string>
 #  include "opencv2/opencv_modules.hpp"
 #  ifdef HAVE_OPENCV_HIGHGUI
 #    include "opencv2/highgui.hpp"
@@ -58,11 +59,13 @@
 using namespace cv;
 
 #ifdef DEBUG_CIRCLES
-void drawPoints(const std::vector<Point2f> &points, Mat &outImage, int radius = 2,  Scalar color = Scalar::all(255), int thickness = -1)
+void drawPoints(const std::vector<Point2f> &points, Mat &outImage, int radius = 2,  Scalar color = Scalar::all(255), int thickness = -1, bool text=true)
 {
   for(size_t i=0; i<points.size(); i++)
   {
     circle(outImage, points[i], radius, color, thickness);
+    if (text)
+      putText(outImage, std::to_string(i), points[i], FONT_HERSHEY_COMPLEX, 1, Scalar(255));
   }
 }
 #endif
@@ -151,7 +154,9 @@ void CirclesGridClusterFinder::findGrid(const std::vector<cv::Point2f> &points, 
 
 #ifdef DEBUG_CIRCLES
   Mat patternPointsImage(1024, 1248, CV_8UC1, Scalar(0));
+//  Mat patternPointsImage(1024, 1248, CV_8UC3, Scalar(0));
   drawPoints(patternPoints, patternPointsImage);
+//  drawPoints(points, patternPointsImage, 2, cv::Scalar(0,0,255));
   imshow("pattern points", patternPointsImage);
 #endif
 
@@ -223,8 +228,8 @@ void CirclesGridClusterFinder::findOutsideCorners(const std::vector<cv::Point2f>
   int i, j, n = (int)corners.size();
 
 #ifdef DEBUG_CIRCLES
-  Mat cornersImage(1024, 1248, CV_8UC1, Scalar(0));
-  drawPoints(corners, cornersImage);
+  Mat cornersImage(1024, 1248, CV_8UC3, Scalar(0));
+  drawPoints(corners, cornersImage, 5);
   imshow("corners", cornersImage);
 #endif
 
@@ -257,7 +262,9 @@ void CirclesGridClusterFinder::findOutsideCorners(const std::vector<cv::Point2f>
     cosAngles.col(maxLoc.x).setTo(0.0f);
     cosAngles.row(maxLoc.y).setTo(0.0f);
     cosAngles.col(maxLoc.y).setTo(0.0f);
+    std::cout << __FILE__ << " " << __LINE__ << " " << __FUNCTION__ << ": " << maxLoc << " ";
     minMaxLoc(cosAngles, 0, 0, 0, &maxLoc);
+    std::cout << __FILE__ << " " << __LINE__ << " " << __FUNCTION__ << ": " << maxLoc << " \n";
   }
 
 #ifdef DEBUG_CIRCLES
@@ -286,7 +293,7 @@ void CirclesGridClusterFinder::findOutsideCorners(const std::vector<cv::Point2f>
   outsideCorners.push_back(corners[(outsidersSegmentIdx + 1) % n]);
 
 #ifdef DEBUG_CIRCLES
-  drawPoints(outsideCorners, cornersImage, 2, Scalar(128));
+  drawPoints(outsideCorners, cornersImage, 2, Scalar(0,0,255), -1, false);
   imshow("corners", cornersImage);
 #endif
 }

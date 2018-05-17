@@ -75,6 +75,7 @@
 #include "circlesgrid.hpp"
 #include <stdarg.h>
 #include <vector>
+#include <iostream>
 
 using namespace cv;
 using namespace std;
@@ -82,6 +83,10 @@ using namespace std;
 //#define ENABLE_TRIM_COL_ROW
 
 //#define DEBUG_CHESSBOARD
+#define DEBUG_CRICLEBOARD
+#ifdef DEBUG_CRICLEBOARD
+  #include <opencv2/highgui.hpp>
+#endif
 
 #ifdef DEBUG_CHESSBOARD
 static int PRINTF( const char* fmt, ... )
@@ -2094,6 +2099,29 @@ void cv::drawChessboardCorners( InputOutputArray _image, Size patternSize,
                              nelems, patternWasFound );
 }
 
+#ifdef DEBUG_CRICLEBOARD
+template <typename T>
+void drawPoints(const std::vector<T> &points,
+                cv::Mat &outImage, int radius = 2,
+                cv::Scalar color = cv::Scalar::all(255), int thickness = -1)
+{
+  for(size_t i=0; i<points.size(); i++)
+  {
+    cv::circle(outImage, points[i], radius, color, thickness);
+  }
+}
+
+void drawPoints(const std::vector<cv::KeyPoint> &points,
+                cv::Mat &outImage,
+                cv::Scalar color = cv::Scalar::all(255), int thickness = -1)
+{
+  for(size_t i=0; i<points.size(); i++)
+  {
+    cv::circle(outImage, points[i].pt, points[i].size/2, color, thickness);
+  }
+}
+#endif
+
 bool cv::findCirclesGrid( InputArray _image, Size patternSize,
                           OutputArray _centers, int flags, const Ptr<FeatureDetector> &blobDetector,
                           const CirclesGridFinderParameters& parameters_)
@@ -2117,6 +2145,13 @@ bool cv::findCirclesGrid( InputArray _image, Size patternSize,
       points.push_back (keypoints[i].pt);
     }
 
+#ifdef DEBUG_CRICLEBOARD
+    Mat keypointsImage(1024, 1248, CV_8UC3, Scalar(0));
+    drawPoints(keypoints, keypointsImage, Scalar::all(255));
+    drawPoints(points, keypointsImage, 5, Scalar(0,0,255));
+    imshow("key points", keypointsImage);
+#endif
+
     if(flags & CALIB_CB_ASYMMETRIC_GRID)
       parameters.gridType = CirclesGridFinderParameters::ASYMMETRIC_GRID;
     if(flags & CALIB_CB_SYMMETRIC_GRID)
@@ -2135,6 +2170,7 @@ bool cv::findCirclesGrid( InputArray _image, Size patternSize,
     Mat H;
     for (int i = 0; i < attempts; i++)
     {
+
       centers.clear();
       CirclesGridFinder boxFinder(patternSize, points, parameters);
       bool isFound = false;
@@ -2146,6 +2182,7 @@ bool cv::findCirclesGrid( InputArray _image, Size patternSize,
       CV_TRY
       {
         isFound = boxFinder.findHoles();
+        std::cout << __FILE__ << " " << __LINE__ << " " << __FUNCTION__ << " " << isFound << '\n';
       }
       CV_CATCH(Exception, e)
       {

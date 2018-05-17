@@ -44,10 +44,11 @@
 #include <iterator>
 #include <limits>
 
-//#define DEBUG_BLOB_DETECTOR
+#define DEBUG_BLOB_DETECTOR
 
 #ifdef DEBUG_BLOB_DETECTOR
 #  include "opencv2/opencv_modules.hpp"
+#  include "opencv2/imgproc/types_c.h"
 #  ifdef HAVE_OPENCV_HIGHGUI
 #    include "opencv2/highgui.hpp"
 #  else
@@ -201,13 +202,13 @@ void SimpleBlobDetectorImpl::findBlobs(InputArray _image, InputArray _binaryImag
     findContours(tmpBinaryImage, contours, RETR_LIST, CHAIN_APPROX_NONE);
 
 #ifdef DEBUG_BLOB_DETECTOR
-    //  Mat keypointsImage;
-    //  cvtColor( binaryImage, keypointsImage, CV_GRAY2RGB );
-    //
-    //  Mat contoursImage;
-    //  cvtColor( binaryImage, contoursImage, CV_GRAY2RGB );
-    //  drawContours( contoursImage, contours, -1, Scalar(0,255,0) );
-    //  imshow("contours", contoursImage );
+      Mat keypointsImage;
+      cvtColor( binaryImage, keypointsImage, CV_GRAY2RGB );
+
+      Mat contoursImage;
+      cvtColor( binaryImage, contoursImage, CV_GRAY2RGB );
+      drawContours( contoursImage, contours, -1, Scalar(0,255,0) );
+      imshow("contours", contoursImage );
 #endif
 
     for (size_t contourIdx = 0; contourIdx < contours.size(); contourIdx++)
@@ -295,12 +296,12 @@ void SimpleBlobDetectorImpl::findBlobs(InputArray _image, InputArray _binaryImag
 
 
 #ifdef DEBUG_BLOB_DETECTOR
-        //    circle( keypointsImage, center.location, 1, Scalar(0,0,255), 1 );
+            circle( keypointsImage, center.location, 1, Scalar(0,0,255), 1 );
 #endif
     }
 #ifdef DEBUG_BLOB_DETECTOR
-    //  imshow("bk", keypointsImage );
-    //  waitKey();
+      imshow("bk", keypointsImage );
+//      waitKey();
 #endif
 }
 
